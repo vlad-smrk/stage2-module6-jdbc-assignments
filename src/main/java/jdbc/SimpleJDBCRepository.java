@@ -20,17 +20,20 @@ public class SimpleJDBCRepository {
     private PreparedStatement ps = null;
     private Statement st = null;
 
-    private static final String createUserSQL = "CREATE TABLE myusers (id bigint PRIMARY KEY AUTO-INCREMENT, firstname varchar(63), lastname varchar(63), age int);";
-    private static final String updateUserSQL = "";
+    private static final String createUserSQL = "INSERT INTO myusers (firstname, lastname, age) VALUES (?, ?, ?);";
+    private static final String updateUserSQL = "UPDATE myusers SET firstname = ?, lastname = ?, age = ? WHERE id = ?";
     private static final String deleteUser = "DELETE FROM myusers WHERE id = ?";
     private static final String findUserByIdSQL = "SELECT * FROM myusers WHERE id = ?;";
     private static final String findUserByNameSQL = "SELECT * FROM myusers WHERE firstname LIKE CONCAT(?, '%');";
     private static final String findAllUserSQL = "SELECT * FROM myusers;";
 
-    public Long createUser() {
+    public void createUser(User user) {
         try (Connection conn = CustomDataSource.getInstance().getConnection();
-             Statement stmt = conn.createStatement()) {
-            return stmt.executeLargeUpdate(createUserSQL);
+             PreparedStatement stmt = conn.prepareStatement(createUserSQL)) {
+            stmt.setString(1, user.getFirstName());
+            stmt.setString(2, user.getLastName());
+            stmt.setInt(3, user.getAge());
+            stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -80,11 +83,20 @@ public class SimpleJDBCRepository {
         }
     }
 
-    public User updateUser() {
-        return new User();
+    public void updateUser(User user) {
+        try (Connection conn = CustomDataSource.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(updateUserSQL)) {
+            stmt.setString(1, user.getFirstName());
+            stmt.setString(2, user.getLastName());
+            stmt.setInt(3, user.getAge());
+            stmt.setLong(4, user.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void deleteUser(Long userId) {
+    public void deleteUser(Long userId) {
         try (Connection conn = CustomDataSource.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(deleteUser)) {
             stmt.setLong(1, userId);
