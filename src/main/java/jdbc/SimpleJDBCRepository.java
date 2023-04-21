@@ -27,13 +27,13 @@ public class SimpleJDBCRepository {
     private static final String findUserByNameSQL = "SELECT * FROM myusers WHERE firstname LIKE CONCAT(?, '%');";
     private static final String findAllUserSQL = "SELECT * FROM myusers;";
 
-    public void createUser(User user) {
+    public Long createUser(User user) {
         try (Connection conn = CustomDataSource.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(createUserSQL)) {
             stmt.setString(1, user.getFirstName());
             stmt.setString(2, user.getLastName());
             stmt.setInt(3, user.getAge());
-            stmt.executeUpdate();
+            return stmt.executeLargeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
