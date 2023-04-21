@@ -31,7 +31,7 @@ public class CustomDataSource implements DataSource {
 
     public static CustomDataSource getInstance() {
         if (instance == null) {
-            try (Reader config = new FileReader("app.properties")) {
+            try (InputStream config = CustomDataSource.class.getClassLoader().getResourceAsStream("app.properties")) {
                 Properties properties = new Properties();
                 properties.load(config);
                 instance = new CustomDataSource(properties.getProperty("postgres.driver"), properties.getProperty("postgres.url"), properties.getProperty("postgres.password"), properties.getProperty("postgres.name"));
@@ -86,4 +86,5 @@ public class CustomDataSource implements DataSource {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
     }
+
 }
