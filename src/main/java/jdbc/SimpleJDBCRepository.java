@@ -20,6 +20,9 @@ public class SimpleJDBCRepository {
     private PreparedStatement ps = null;
     private Statement st = null;
 
+    private static final CustomDataSource dataSource = CustomDataSource.getInstance();
+
+
     private static final String createUserSQL = "INSERT INTO myusers (firstname, lastname, age) VALUES (?, ?, ?);";
     private static final String updateUserSQL = "UPDATE myusers SET firstname = ?, lastname = ?, age = ? WHERE id = ?";
     private static final String deleteUser = "DELETE FROM myusers WHERE id = ?";
@@ -27,8 +30,16 @@ public class SimpleJDBCRepository {
     private static final String findUserByNameSQL = "SELECT * FROM myusers WHERE firstname LIKE CONCAT(?, '%');";
     private static final String findAllUserSQL = "SELECT * FROM myusers;";
 
+    static {
+        try {
+            Class.forName(dataSource.getDriver());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Long createUser(User user) {
-        try (Connection conn = CustomDataSource.getInstance().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(createUserSQL)) {
             stmt.setString(1, user.getFirstName());
             stmt.setString(2, user.getLastName());
@@ -40,7 +51,7 @@ public class SimpleJDBCRepository {
     }
 
     public User findUserById(Long userId) {
-        try (Connection conn = CustomDataSource.getInstance().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(findUserByIdSQL)) {
             stmt.setLong(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -55,7 +66,7 @@ public class SimpleJDBCRepository {
     }
 
     public User findUserByName(String userName) {
-        try (Connection conn = CustomDataSource.getInstance().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(findUserByNameSQL)) {
             stmt.setString(1, userName);
             ResultSet rs = stmt.executeQuery();
@@ -70,7 +81,7 @@ public class SimpleJDBCRepository {
     }
 
     public List<User> findAllUser() {
-        try (Connection conn = CustomDataSource.getInstance().getConnection();
+        try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(findAllUserSQL);
             List<User> users = new ArrayList<>();
@@ -84,7 +95,7 @@ public class SimpleJDBCRepository {
     }
 
     public void updateUser(User user) {
-        try (Connection conn = CustomDataSource.getInstance().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(updateUserSQL)) {
             stmt.setString(1, user.getFirstName());
             stmt.setString(2, user.getLastName());
@@ -97,7 +108,7 @@ public class SimpleJDBCRepository {
     }
 
     public void deleteUser(Long userId) {
-        try (Connection conn = CustomDataSource.getInstance().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(deleteUser)) {
             stmt.setLong(1, userId);
             stmt.executeUpdate();
