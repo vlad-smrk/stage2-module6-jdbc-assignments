@@ -40,12 +40,11 @@ public class SimpleJDBCRepository {
 
     public Long createUser(User user) {
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(createUserSQL, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = conn.prepareStatement(createUserSQL)) {
             stmt.setString(1, user.getFirstName());
             stmt.setString(2, user.getLastName());
             stmt.setInt(3, user.getAge());
-            stmt.executeUpdate();
-            return stmt.getGeneratedKeys().getLong(1);
+            return stmt.executeLargeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
